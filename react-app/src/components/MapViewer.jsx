@@ -12,7 +12,8 @@ L.Icon.Default.mergeOptions({
 });
 
 // WMS Configuration (based on Google Earth working config)
-const WMS_URL = 'http://db-ivl-wms.wheregroup.com/service';
+// Using HTTPS to avoid mixed content issues on GitHub Pages
+const WMS_URL = 'https://db-ivl-wms.wheregroup.com/service';
 const WMS_LAYERS = {
   IVL: 'IVL',
   OSM: 'OSM',
