@@ -285,39 +285,50 @@ const MapViewer = ({ records, selectedRecords }) => {
           </div>
         )}
 
-        <div className="border-t pt-2">
-          <button
-            onClick={checkWMSAvailability}
-            disabled={wmsStatus === 'checking'}
-            className={`w-full text-xs py-1.5 px-3 rounded transition-colors ${
-              wmsStatus === 'checking'
-                ? 'bg-gray-300 text-gray-600 cursor-wait'
-                : wmsStatus === 'available'
-                ? 'bg-green-500 text-white'
-                : wmsStatus === 'error'
-                ? 'bg-red-500 text-white'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {wmsStatus === 'checking' && 'Prüfe...'}
-            {wmsStatus === 'available' && '✓ Verfügbar'}
-            {wmsStatus === 'error' && '✗ Nicht verfügbar'}
-            {!wmsStatus && 'WMS-Verfügbarkeit prüfen'}
-          </button>
-        </div>
-
-        {/* WMS Status Indicator */}
-        {wmsError && (
+        {/* WMS check button - only show when not on HTTPS */}
+        {!isHTTPS && (
           <div className="border-t pt-2">
-            <div className="bg-blue-50 border border-blue-200 rounded p-2">
-              <p className="text-xs text-blue-800 leading-relaxed">
-                <strong>ℹ️ Info:</strong> {isHTTPS ? 'WMS läuft nur auf HTTP. ' : ''}
-                Öffentliches OSM wird verwendet.
-                {isHTTPS && (
-                  <span className="block mt-1 text-blue-600">
-                    Für WMS: App lokal öffnen (http://localhost)
-                  </span>
-                )}
+            <button
+              onClick={checkWMSAvailability}
+              disabled={wmsStatus === 'checking'}
+              className={`w-full text-xs py-1.5 px-3 rounded transition-colors ${
+                wmsStatus === 'checking'
+                  ? 'bg-gray-300 text-gray-600 cursor-wait'
+                  : wmsStatus === 'available'
+                  ? 'bg-green-500 text-white'
+                  : wmsStatus === 'error'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
+            >
+              {wmsStatus === 'checking' && 'Prüfe...'}
+              {wmsStatus === 'available' && '✓ Verfügbar'}
+              {wmsStatus === 'error' && '✗ Nicht verfügbar'}
+              {!wmsStatus && 'WMS-Verfügbarkeit prüfen'}
+            </button>
+          </div>
+        )}
+
+        {/* Info about public OSM usage on HTTPS */}
+        {isHTTPS && (
+          <div className="border-t pt-2">
+            <div className="bg-green-50 border border-green-200 rounded p-2">
+              <p className="text-xs text-green-800 leading-relaxed">
+                <strong>✓ Öffentliche OSM-Karten</strong>
+                <span className="block mt-1 text-green-700">
+                  Kostenlos & frei verfügbar
+                </span>
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* WMS error indicator (only when not HTTPS) */}
+        {wmsError && !isHTTPS && (
+          <div className="border-t pt-2">
+            <div className="bg-amber-50 border border-amber-200 rounded p-2">
+              <p className="text-xs text-amber-800 leading-relaxed">
+                <strong>⚠️ WMS-Fehler:</strong> Fallback auf öffentliches OSM
               </p>
             </div>
           </div>
