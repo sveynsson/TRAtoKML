@@ -38,6 +38,8 @@ const MapViewer = ({ records, selectedRecords }) => {
   const [baseLayer, setBaseLayer] = useState('OSM'); // 'OSM', 'OSM_GREYSCALE', or 'IVL'
   const [showIVL, setShowIVL] = useState(false);
   const [wmsStatus, setWmsStatus] = useState(null); // null, 'checking', 'available', 'error'
+  const [useWMS, setUseWMS] = useState(true); // Fallback to public OSM if false
+  const [wmsError, setWmsError] = useState(false);
 
   // All coordinates
   const allPositions = useMemo(() => {
@@ -102,40 +104,87 @@ const MapViewer = ({ records, selectedRecords }) => {
         style={{ height: '100%', width: '100%' }}
         ref={mapRef}
       >
-        {/* Base Layer - OSM WMS */}
-        {baseLayer === 'OSM' && (
-          <WMSTileLayer
-            url={WMS_URL}
-            layers={WMS_LAYERS.OSM}
-            format="image/png"
-            transparent={false}
-            version="1.1.1"
-            attribution='© DB Netz - OSM'
-          />
+        {/* WMS Base Layers */}
+        {useWMS && !wmsError && (
+          <>
+            {/* Base Layer - OSM WMS */}
+            {baseLayer === 'OSM' && (
+              <WMSTileLayer
+                url={WMS_URL}
+                layers={WMS_LAYERS.OSM}
+                format="image/png"
+                transparent={false}
+                version="1.1.1"
+                attribution='© DB Netz - OSM'
+                eventHandlers={{
+                  tileerror: () => {
+                    console.warn('WMS tile loading failed, switching to fallback');
+                    setWmsError(true);
+                    setUseWMS(false);
+                  }
+                }}
+              />
+            )}
+
+            {/* Base Layer - OSM Greyscale WMS */}
+            {baseLayer === 'OSM_GREYSCALE' && (
+              <WMSTileLayer
+                url={WMS_URL}
+                layers={WMS_LAYERS.OSM_GREYSCALE}
+                format="image/png"
+                transparent={false}
+                version="1.1.1"
+                attribution='© DB Netz - OSM Greyscale'
+                eventHandlers={{
+                  tileerror: () => {
+                    console.warn('WMS tile loading failed, switching to fallback');
+                    setWmsError(true);
+                    setUseWMS(false);
+                  }
+                }}
+              />
+            )}
+
+            {/* IVL Overlay Layer */}
+            {showIVL && (
+              <WMSTileLayer
+                url={WMS_URL}
+                layers={WMS_LAYERS.IVL}
+                format="image/png"
+                transparent={true}
+                version="1.1.1"
+                attribution='© DB Netz - IVL'
+                eventHandlers={{
+                  tileerror: () => {
+                    console.warn('WMS IVL layer loading failed');
+                  }
+                }}
+              />
+            )}
+          </>
         )}
 
-        {/* Base Layer - OSM Greyscale WMS */}
-        {baseLayer === 'OSM_GREYSCALE' && (
-          <WMSTileLayer
-            url={WMS_URL}
-            layers={WMS_LAYERS.OSM_GREYSCALE}
-            format="image/png"
-            transparent={false}
-            version="1.1.1"
-            attribution='© DB Netz - OSM Greyscale'
-          />
-        )}
+        {/* Fallback Layers - Public OSM Servers */}
+        {(!useWMS || wmsError) && (
+          <>
+            {/* OpenStreetMap Standard */}
+            {baseLayer === 'OSM' && (
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                maxZoom={19}
+              />
+            )}
 
-        {/* IVL Overlay Layer */}
-        {showIVL && (
-          <WMSTileLayer
-            url={WMS_URL}
-            layers={WMS_LAYERS.IVL}
-            format="image/png"
-            transparent={true}
-            version="1.1.1"
-            attribution='© DB Netz - IVL'
-          />
+            {/* OpenStreetMap Greyscale (using CartoDB) */}
+            {baseLayer === 'OSM_GREYSCALE' && (
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                maxZoom={19}
+              />
+            )}
+          </>
         )}
 
         {/* All positions line (red) */}
@@ -165,8 +214,8 @@ const MapViewer = ({ records, selectedRecords }) => {
         <FitBounds positions={allPositions} />
       </MapContainer>
 
-      {/* Layer Controls */}
-      <div className="absolute top-4 left-4 bg-white bg-opacity-95 rounded-lg shadow-lg p-3 z-[1000] space-y-3">
+      {/* Layer Controls - Unten Links */}
+      <div className="absolute bottom-4 left-4 bg-white bg-opacity-95 rounded-lg shadow-lg p-3 z-[1000] space-y-3">
         <div>
           <h3 className="text-sm font-semibold mb-2 text-gray-700">Grundlayer</h3>
           <div className="space-y-1">
@@ -193,18 +242,20 @@ const MapViewer = ({ records, selectedRecords }) => {
           </div>
         </div>
 
-        <div className="border-t pt-2">
-          <h3 className="text-sm font-semibold mb-2 text-gray-700">Overlay</h3>
-          <label className="flex items-center space-x-2 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showIVL}
-              onChange={(e) => setShowIVL(e.target.checked)}
-              className="cursor-pointer"
-            />
-            <span>IVL-Layer</span>
-          </label>
-        </div>
+        {useWMS && (
+          <div className="border-t pt-2">
+            <h3 className="text-sm font-semibold mb-2 text-gray-700">Overlay</h3>
+            <label className="flex items-center space-x-2 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showIVL}
+                onChange={(e) => setShowIVL(e.target.checked)}
+                className="cursor-pointer"
+              />
+              <span>IVL-Layer</span>
+            </label>
+          </div>
+        )}
 
         <div className="border-t pt-2">
           <button
@@ -226,6 +277,32 @@ const MapViewer = ({ records, selectedRecords }) => {
             {!wmsStatus && 'WMS-Verfügbarkeit prüfen'}
           </button>
         </div>
+
+        {/* WMS Status Indicator */}
+        {wmsError && (
+          <div className="border-t pt-2">
+            <div className="bg-amber-50 border border-amber-200 rounded p-2">
+              <p className="text-xs text-amber-800">
+                <strong>⚠️ Fallback:</strong> Öffentliches OSM wird verwendet
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Toggle WMS/Fallback */}
+        {wmsError && (
+          <div className="border-t pt-2">
+            <button
+              onClick={() => {
+                setWmsError(false);
+                setUseWMS(true);
+              }}
+              className="w-full text-xs py-1.5 px-3 rounded bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+            >
+              WMS erneut versuchen
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info overlay */}
