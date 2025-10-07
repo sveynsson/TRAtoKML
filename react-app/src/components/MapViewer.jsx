@@ -11,8 +11,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// WMS Configuration
-const WMS_URL = 'http://db-ivl-wms.wheregroup.com/service:80';
+// WMS Configuration (based on Google Earth working config)
+const WMS_URL = 'http://db-ivl-wms.wheregroup.com/service';
 const WMS_LAYERS = {
   IVL: 'IVL',
   OSM: 'OSM',
@@ -115,6 +115,12 @@ const MapViewer = ({ records, selectedRecords }) => {
                 format="image/png"
                 transparent={false}
                 version="1.1.1"
+                params={{
+                  styles: 'default',
+                  srs: 'EPSG:4326',
+                  width: 2048,
+                  height: 2048
+                }}
                 attribution='© DB Netz - OSM'
                 eventHandlers={{
                   tileerror: () => {
@@ -134,6 +140,12 @@ const MapViewer = ({ records, selectedRecords }) => {
                 format="image/png"
                 transparent={false}
                 version="1.1.1"
+                params={{
+                  styles: 'default',
+                  srs: 'EPSG:4326',
+                  width: 2048,
+                  height: 2048
+                }}
                 attribution='© DB Netz - OSM Greyscale'
                 eventHandlers={{
                   tileerror: () => {
@@ -153,6 +165,12 @@ const MapViewer = ({ records, selectedRecords }) => {
                 format="image/png"
                 transparent={true}
                 version="1.1.1"
+                params={{
+                  styles: 'default',
+                  srs: 'EPSG:4326',
+                  width: 2048,
+                  height: 2048
+                }}
                 attribution='© DB Netz - IVL'
                 eventHandlers={{
                   tileerror: () => {
