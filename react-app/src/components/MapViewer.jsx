@@ -39,8 +39,11 @@ const MapViewer = ({ records, selectedRecords }) => {
   const [baseLayer, setBaseLayer] = useState('OSM'); // 'OSM', 'OSM_GREYSCALE', or 'IVL'
   const [showIVL, setShowIVL] = useState(false);
   const [wmsStatus, setWmsStatus] = useState(null); // null, 'checking', 'available', 'error'
-  const [useWMS, setUseWMS] = useState(true); // Fallback to public OSM if false
-  const [wmsError, setWmsError] = useState(false);
+  
+  // Check if page is served over HTTPS - if yes, disable WMS (mixed content issue)
+  const isHTTPS = window.location.protocol === 'https:';
+  const [useWMS, setUseWMS] = useState(!isHTTPS); // Disable WMS on HTTPS by default
+  const [wmsError, setWmsError] = useState(isHTTPS); // Show info if on HTTPS
 
   // All coordinates
   const allPositions = useMemo(() => {
@@ -67,6 +70,12 @@ const MapViewer = ({ records, selectedRecords }) => {
 
   // Check WMS availability
   const checkWMSAvailability = async () => {
+    if (isHTTPS) {
+      setWmsStatus('error');
+      setTimeout(() => setWmsStatus(null), 3000);
+      return;
+    }
+    
     setWmsStatus('checking');
     try {
       const capabilities = `${WMS_URL}?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1`;
@@ -300,16 +309,22 @@ const MapViewer = ({ records, selectedRecords }) => {
         {/* WMS Status Indicator */}
         {wmsError && (
           <div className="border-t pt-2">
-            <div className="bg-amber-50 border border-amber-200 rounded p-2">
-              <p className="text-xs text-amber-800">
-                <strong>⚠️ Fallback:</strong> Öffentliches OSM wird verwendet
+            <div className="bg-blue-50 border border-blue-200 rounded p-2">
+              <p className="text-xs text-blue-800 leading-relaxed">
+                <strong>ℹ️ Info:</strong> {isHTTPS ? 'WMS läuft nur auf HTTP. ' : ''}
+                Öffentliches OSM wird verwendet.
+                {isHTTPS && (
+                  <span className="block mt-1 text-blue-600">
+                    Für WMS: App lokal öffnen (http://localhost)
+                  </span>
+                )}
               </p>
             </div>
           </div>
         )}
 
-        {/* Toggle WMS/Fallback */}
-        {wmsError && (
+        {/* Toggle WMS/Fallback - only show if not HTTPS or if manually disabled */}
+        {wmsError && !isHTTPS && (
           <div className="border-t pt-2">
             <button
               onClick={() => {
