@@ -1,47 +1,66 @@
 import proj4 from 'proj4';
 
-// Coordinate system definitions
+// Register EPSG definitions for accurate transformations
+// DHDN (Deutsches Hauptdreiecksnetz) - Legacy GK with different datum parameters
+proj4.defs('EPSG:31466', '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 2
+proj4.defs('EPSG:31467', '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 3
+proj4.defs('EPSG:31468', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 4
+proj4.defs('EPSG:31469', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 5
+
+// RD/83 (Rauenberg Datum 1983) - Different towgs84 parameters than DHDN
+proj4.defs('EPSG:3398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4
+proj4.defs('EPSG:3399', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5
+proj4.defs('EPSG:5668', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4 (E-N)
+proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5 (E-N)
+
+// ETRS89 / UTM
+proj4.defs('EPSG:25833', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N
+proj4.defs('EPSG:3045', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N (N-E)
+proj4.defs('EPSG:5653', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N (N-zE)
+proj4.defs('EPSG:5650', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N (zE-N)
+
+// Coordinate system mapping to EPSG codes
 const COORDINATE_SYSTEMS = {
-  // Legacy Gauß-Krüger zones
-  'gk2': '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,1.1155214628,0.2824339890,-3.1384490633,-7.992235 +units=m +no_defs',
-  'gk3': '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,1.1155214628,0.2824339890,-3.1384490633,-7.992235 +units=m +no_defs',
-  'gk4': '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,1.1155214628,0.2824339890,-3.1384490633,-7.992235 +units=m +no_defs',
-  'gk5': '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,1.1155214628,0.2824339890,-3.1384490633,-7.992235 +units=m +no_defs',
+  // Legacy Gauß-Krüger zones (DHDN)
+  'gk2': 'EPSG:31466',
+  'gk3': 'EPSG:31467',
+  'gk4': 'EPSG:31468',
+  'gk5': 'EPSG:31469',
   
   // RD/83 3-degree Gauss-Kruger zones
-  'rd83_gk4': '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77.0,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs', // EPSG:3398
-  'rd83_gk5': '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77.0,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs', // EPSG:3399
-  'rd83_gk4_en': '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77.0,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs', // EPSG:5668
-  'rd83_gk5_en': '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77.0,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs', // EPSG:5669
+  'rd83_gk4': 'EPSG:3398',
+  'rd83_gk5': 'EPSG:3399',
+  'rd83_gk4_en': 'EPSG:5668',
+  'rd83_gk5_en': 'EPSG:5669',
   
   // ETRS89 / UTM zones
-  'etrs89_utm33n': '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs', // EPSG:25833
-  'etrs89_utm33n_ne': '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs', // EPSG:3045
-  'etrs89_utm33n_nze': '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs', // EPSG:5653
-  'etrs89_utm33n_zen': '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'  // EPSG:5650
+  'etrs89_utm33n': 'EPSG:25833',
+  'etrs89_utm33n_ne': 'EPSG:3045',
+  'etrs89_utm33n_nze': 'EPSG:5653',
+  'etrs89_utm33n_zen': 'EPSG:5650'
 };
 
 const WGS84 = 'EPSG:4326';
 
 // Coordinate system configurations with axis order handling
 const COORDINATE_CONFIG = {
-  // Legacy Gauß-Krüger zones (Rechtswert, Hochwert)
-  'gk2': { axisOrder: 'yx', name: 'GK Zone 2' },
-  'gk3': { axisOrder: 'yx', name: 'GK Zone 3' },
-  'gk4': { axisOrder: 'yx', name: 'GK Zone 4' },
-  'gk5': { axisOrder: 'yx', name: 'GK Zone 5' },
+  // Legacy Gauß-Krüger zones (DHDN - Deutsches Hauptdreiecksnetz)
+  'gk2': { axisOrder: 'yx', name: 'DHDN / GK Zone 2 (EPSG:31466)', epsg: 'EPSG:31466' },
+  'gk3': { axisOrder: 'yx', name: 'DHDN / GK Zone 3 (EPSG:31467)', epsg: 'EPSG:31467' },
+  'gk4': { axisOrder: 'yx', name: 'DHDN / GK Zone 4 (EPSG:31468)', epsg: 'EPSG:31468' },
+  'gk5': { axisOrder: 'yx', name: 'DHDN / GK Zone 5 (EPSG:31469)', epsg: 'EPSG:31469' },
   
-  // RD/83 systems
-  'rd83_gk4': { axisOrder: 'yx', name: 'RD/83 3-degree GK Zone 4' },
-  'rd83_gk5': { axisOrder: 'yx', name: 'RD/83 3-degree GK Zone 5' },
-  'rd83_gk4_en': { axisOrder: 'xy', name: 'RD/83 3-degree GK Zone 4 (E-N)' },
-  'rd83_gk5_en': { axisOrder: 'xy', name: 'RD/83 3-degree GK Zone 5 (E-N)' },
+  // RD/83 systems (Rauenberg Datum 1983)
+  'rd83_gk4': { axisOrder: 'yx', name: 'RD/83 / GK Zone 4 (EPSG:3398)', epsg: 'EPSG:3398' },
+  'rd83_gk5': { axisOrder: 'yx', name: 'RD/83 / GK Zone 5 (EPSG:3399)', epsg: 'EPSG:3399' },
+  'rd83_gk4_en': { axisOrder: 'xy', name: 'RD/83 / GK Zone 4 E-N (EPSG:5668)', epsg: 'EPSG:5668' },
+  'rd83_gk5_en': { axisOrder: 'xy', name: 'RD/83 / GK Zone 5 E-N (EPSG:5669)', epsg: 'EPSG:5669' },
   
   // ETRS89 / UTM systems  
-  'etrs89_utm33n': { axisOrder: 'xy', name: 'ETRS89 / UTM Zone 33N' },
-  'etrs89_utm33n_ne': { axisOrder: 'yx', name: 'ETRS89 / UTM Zone 33N (N-E)' },
-  'etrs89_utm33n_nze': { axisOrder: 'yx', name: 'ETRS89 / UTM Zone 33N (N-zE)' },
-  'etrs89_utm33n_zen': { axisOrder: 'xy', name: 'ETRS89 / UTM Zone 33N (zE-N)' }
+  'etrs89_utm33n': { axisOrder: 'xy', name: 'ETRS89 / UTM 33N (EPSG:25833)', epsg: 'EPSG:25833' },
+  'etrs89_utm33n_ne': { axisOrder: 'yx', name: 'ETRS89 / UTM 33N N-E (EPSG:3045)', epsg: 'EPSG:3045' },
+  'etrs89_utm33n_nze': { axisOrder: 'yx', name: 'ETRS89 / UTM 33N N-zE (EPSG:5653)', epsg: 'EPSG:5653' },
+  'etrs89_utm33n_zen': { axisOrder: 'xy', name: 'ETRS89 / UTM 33N zE-N (EPSG:5650)', epsg: 'EPSG:5650' }
 };
 
 /**
@@ -104,8 +123,8 @@ export function getCoordinateSystems() {
  * @returns {string} Category name
  */
 function getCategoryForSystem(system) {
-  if (system.startsWith('gk')) return 'Gauß-Krüger (Legacy)';
-  if (system.startsWith('rd83')) return 'RD/83';
+  if (system.startsWith('gk')) return 'DHDN (Deutsches Hauptdreiecksnetz)';
+  if (system.startsWith('rd83')) return 'RD/83 (Rauenberg Datum 1983)';
   if (system.startsWith('etrs89')) return 'ETRS89/UTM';
   return 'Andere';
 }
