@@ -1,0 +1,14 @@
+# Bytecode
+*.pyc
+__pycache__/
+
+# Virtuelle Umgebungen
+venv/
+env/
+
+# Exe-Dateien (falls Du sie nicht immer hochladen möchtest)
+# Wenn Du sie jedoch hochladen möchtest, entferne diese Zeile:
+# *.exe
+
+# Andere temporäre Dateien
+*.log
