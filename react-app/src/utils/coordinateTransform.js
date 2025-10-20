@@ -17,6 +17,10 @@ proj4.defs('EPSG:3399', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0
 proj4.defs('EPSG:5668', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4 (E-N)
 proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5 (E-N)
 
+// Pulkovo 1942(83) - Soviet/Russian coordinate system (used in former GDR)
+// Uses Krassowsky 1940 ellipsoid with specific towgs84 transformation parameters
+proj4.defs('EPSG:2398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=krass +towgs84=24,-123,-94,-0.02,0.25,0.13,1.1 +units=m +no_defs'); // Pulkovo 1942(83) / 3-degree Gauss-Kruger zone 4
+
 // ETRS89 / UTM
 proj4.defs('EPSG:25833', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N
 proj4.defs('EPSG:3045', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N (N-E)
@@ -36,6 +40,9 @@ const COORDINATE_SYSTEMS = {
   'rd83_gk5': 'EPSG:3399',
   'rd83_gk4_en': 'EPSG:5668',
   'rd83_gk5_en': 'EPSG:5669',
+  
+  // Pulkovo 1942(83) - Soviet/Russian system
+  'pulkovo_gk4': 'EPSG:2398',
   
   // ETRS89 / UTM zones
   'etrs89_utm33n': 'EPSG:25833',
@@ -60,6 +67,9 @@ const COORDINATE_CONFIG = {
   'rd83_gk5': { axisOrder: 'yx', name: 'RD/83 / GK Zone 5 (EPSG:3399)', epsg: 'EPSG:3399' },
   'rd83_gk4_en': { axisOrder: 'xy', name: 'RD/83 / GK Zone 4 E-N (EPSG:5668)', epsg: 'EPSG:5668' },
   'rd83_gk5_en': { axisOrder: 'xy', name: 'RD/83 / GK Zone 5 E-N (EPSG:5669)', epsg: 'EPSG:5669' },
+  
+  // Pulkovo 1942(83) - Soviet/Russian system (used in former GDR)
+  'pulkovo_gk4': { axisOrder: 'yx', name: 'Pulkovo 1942(83) / GK Zone 4 (EPSG:2398)', epsg: 'EPSG:2398' },
   
   // ETRS89 / UTM systems  
   'etrs89_utm33n': { axisOrder: 'xy', name: 'ETRS89 / UTM 33N (EPSG:25833)', epsg: 'EPSG:25833' },
@@ -130,6 +140,7 @@ export function getCoordinateSystems() {
 function getCategoryForSystem(system) {
   if (system.startsWith('gk')) return 'DHDN (Deutsches Hauptdreiecksnetz)';
   if (system.startsWith('rd83')) return 'RD/83 (Rauenberg Datum 1983)';
+  if (system.startsWith('pulkovo')) return 'Pulkovo 1942(83) (Soviet/DDR)';
   if (system.startsWith('etrs89')) return 'ETRS89/UTM';
   return 'Andere';
 }
