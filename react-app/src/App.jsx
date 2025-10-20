@@ -4,20 +4,30 @@ import MapViewer from './components/MapViewer';
 import DataTable from './components/DataTable';
 import FileDropZone from './components/FileDropZone';
 import { parseTRAFile } from './utils/traParser';
-import { transformCoordinates } from './utils/coordinateTransform';
+import { transformCoordinates, getCoordinateSystems } from './utils/coordinateTransform';
 import { exportToKML } from './utils/kmlExport';
 
 function App() {
-  const [gkZone, setGkZone] = useState('');
+  const [coordinateSystem, setCoordinateSystem] = useState('');
   const [records, setRecords] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState(new Set());
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get available coordinate systems grouped by category
+  const coordinateSystems = getCoordinateSystems();
+  const groupedSystems = coordinateSystems.reduce((acc, system) => {
+    if (!acc[system.category]) {
+      acc[system.category] = [];
+    }
+    acc[system.category].push(system);
+    return acc;
+  }, {});
+
   const handleFileUpload = useCallback(async (file) => {
-    if (!gkZone) {
-      setError('Bitte wählen Sie zuerst eine GK-Zone aus.');
+    if (!coordinateSystem) {
+      setError('Bitte wählen Sie zuerst ein Koordinatensystem aus.');
       return;
     }
 
@@ -35,7 +45,7 @@ function App() {
       // Transform coordinates to WGS84
       const transformedRecords = parsedRecords.map(record => ({
         ...record,
-        ...transformCoordinates(record.rY, record.rX, gkZone)
+        ...transformCoordinates(record.rY, record.rX, coordinateSystem)
       }));
 
       setRecords(transformedRecords);
@@ -52,7 +62,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [gkZone]);
+  }, [coordinateSystem]);
 
   const handleExport = useCallback(() => {
     if (selectedRecords.size === 0) {
@@ -124,16 +134,21 @@ function App() {
               <div className="flex items-center space-x-2">
                 <Layers className="w-5 h-5 text-gray-600" />
                 <select
-                  value={gkZone}
-                  onChange={(e) => setGkZone(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  value={coordinateSystem}
+                  onChange={(e) => setCoordinateSystem(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-w-[280px]"
                   disabled={records.length > 0}
                 >
-                  <option value="">GK-Zone wählen</option>
-                  <option value="2">Zone 2</option>
-                  <option value="3">Zone 3</option>
-                  <option value="4">Zone 4</option>
-                  <option value="5">Zone 5</option>
+                  <option value="">Koordinatensystem wählen</option>
+                  {Object.entries(groupedSystems).map(([category, systems]) => (
+                    <optgroup key={category} label={category}>
+                      {systems.map((system) => (
+                        <option key={system.value} value={system.value}>
+                          {system.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
             </div>
@@ -164,7 +179,7 @@ function App() {
             <FileDropZone 
               onFileUpload={handleFileUpload}
               isLoading={isLoading}
-              gkZone={gkZone}
+              coordinateSystem={coordinateSystem}
             />
             
             <div className="mt-8 bg-white rounded-lg shadow-md p-6">
@@ -175,7 +190,7 @@ function App() {
               <ol className="space-y-3 text-gray-700">
                 <li className="flex items-start space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">1</span>
-                  <span>Wählen Sie die passende Gauß-Krüger-Zone (2, 3, 4 oder 5) aus.</span>
+                  <span>Wählen Sie das passende Koordinatensystem aus (GK, RD/83, ETRS89/UTM).</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">2</span>
