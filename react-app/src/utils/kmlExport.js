@@ -71,3 +71,71 @@ export function exportToKML(selectedRecords, allRecords) {
 
   return kml;
 }
+
+/**
+ * Exports multiple tracks to a single KML file with different colors
+ * @param {Array} files - Array of file objects with records and color
+ * @returns {string} - KML file content
+ */
+export function exportBatchToKML(files) {
+  const formatCoord = (record) => {
+    return `${record.lon.toFixed(6)},${record.lat.toFixed(6)},0`;
+  };
+
+  // Generate styles for each color
+  const styles = files.map((file, index) => `
+    <Style id="lineStyle${index}">
+      <LineStyle>
+        <color>${file.color.kml}</color>
+        <width>4</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>${file.color.kml}80</color>
+      </PolyStyle>
+    </Style>`).join('');
+
+  // Generate placemarks for each track
+  const placemarks = files.map((file, index) => {
+    const coords = file.records
+      .filter(r => r.lat && r.lon)
+      .map(formatCoord)
+      .join(' ');
+
+    return `
+    <Placemark>
+      <name>${file.name}</name>
+      <description>
+        <![CDATA[
+          <b>Datei:</b> ${file.name}<br/>
+          <b>Punkte:</b> ${file.pointCount}<br/>
+          <b>Farbe:</b> ${file.color.name}
+        ]]>
+      </description>
+      <styleUrl>#lineStyle${index}</styleUrl>
+      <LineString>
+        <extrude>0</extrude>
+        <tessellate>1</tessellate>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates>
+          ${coords}
+        </coordinates>
+      </LineString>
+    </Placemark>`;
+  }).join('');
+
+  const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>TRA Batch Export</name>
+    <description>Mehrere Trassen exportiert mit TRA zu KML Konverter - ${files.length} Trassen</description>
+    ${styles}
+    <Folder>
+      <name>Alle Trassen</name>
+      <open>1</open>
+      ${placemarks}
+    </Folder>
+  </Document>
+</kml>`;
+
+  return kml;
+}

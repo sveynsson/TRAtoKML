@@ -3,6 +3,7 @@ import { Upload, MapPin, Download, Info, Layers } from 'lucide-react';
 import MapViewer from './components/MapViewer';
 import DataTable from './components/DataTable';
 import FileDropZone from './components/FileDropZone';
+import BatchConverter from './components/BatchConverter';
 import { parseTRAFile } from './utils/traParser';
 import { transformCoordinates, getCoordinateSystems } from './utils/coordinateTransform';
 import { exportToKML } from './utils/kmlExport';
@@ -14,6 +15,7 @@ function App() {
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState('single'); // 'single' or 'batch'
 
   // Get available coordinate systems grouped by category
   const coordinateSystems = getCoordinateSystems();
@@ -131,13 +133,49 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Mode Selector */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => {
+                    setMode('single');
+                    setRecords([]);
+                    setSelectedRecords(new Set());
+                    setFileName('');
+                    setError('');
+                  }}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    mode === 'single'
+                      ? 'bg-white text-blue-600 shadow'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Einzeln
+                </button>
+                <button
+                  onClick={() => {
+                    setMode('batch');
+                    setRecords([]);
+                    setSelectedRecords(new Set());
+                    setFileName('');
+                    setError('');
+                  }}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    mode === 'batch'
+                      ? 'bg-white text-blue-600 shadow'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Massenkonvertierung
+                </button>
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Layers className="w-5 h-5 text-gray-600" />
                 <select
                   value={coordinateSystem}
                   onChange={(e) => setCoordinateSystem(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-w-[280px]"
-                  disabled={records.length > 0}
+                  disabled={records.length > 0 && mode === 'single'}
                 >
                   <option value="">Koordinatensystem wählen</option>
                   {Object.entries(groupedSystems).map(([category, systems]) => (
@@ -174,7 +212,21 @@ function App() {
           </div>
         )}
 
-        {records.length === 0 ? (
+        {/* Batch Mode */}
+        {mode === 'batch' ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h2 className="text-lg font-semibold text-blue-900 mb-2">Massenkonvertierung</h2>
+              <p className="text-blue-800 text-sm">
+                Laden Sie mehrere TRA-Dateien gleichzeitig hoch. Jede Trasse erhält eine eigene Farbe 
+                und alle werden in eine gemeinsame KML-Datei exportiert.
+              </p>
+            </div>
+            <BatchConverter coordinateSystem={coordinateSystem} />
+          </div>
+        ) : (
+          /* Single File Mode - Existing Code */
+          records.length === 0 ? (
           <div className="max-w-4xl mx-auto">
             <FileDropZone 
               onFileUpload={handleFileUpload}
@@ -275,7 +327,8 @@ function App() {
               />
             </div>
           </div>
-        )}
+        )
+      )}
       </main>
 
       {/* Footer */}
