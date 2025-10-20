@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Upload, FileType } from 'lucide-react';
 
-const FileDropZone = ({ onFileUpload, isLoading, gkZone }) => {
+const FileDropZone = ({ onFileUpload, isLoading, coordinateSystem }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDrop = useCallback((e) => {
@@ -48,7 +48,7 @@ const FileDropZone = ({ onFileUpload, isLoading, gkZone }) => {
             ? 'border-blue-500 bg-blue-50 scale-105' 
             : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
           }
-          ${!gkZone ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          ${!coordinateSystem ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           shadow-lg hover:shadow-xl
         `}
       >
@@ -56,7 +56,7 @@ const FileDropZone = ({ onFileUpload, isLoading, gkZone }) => {
           type="file"
           accept=".tra"
           onChange={handleFileInput}
-          disabled={!gkZone || isLoading}
+          disabled={!coordinateSystem || isLoading}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
         
@@ -77,14 +77,14 @@ const FileDropZone = ({ onFileUpload, isLoading, gkZone }) => {
               {isLoading ? 'Datei wird geladen...' : 'TRA-Datei hochladen'}
             </p>
             <p className="text-gray-600">
-              {!gkZone 
-                ? 'Bitte wählen Sie zuerst eine GK-Zone aus' 
+              {!coordinateSystem 
+                ? 'Bitte wählen Sie zuerst ein Koordinatensystem aus' 
                 : 'Ziehen Sie eine .tra-Datei hierher oder klicken Sie zum Auswählen'
               }
             </p>
           </div>
 
-          {gkZone && !isLoading && (
+          {coordinateSystem && !isLoading && (
             <div className="flex items-center space-x-2 text-sm text-gray-500 mt-4">
               <FileType className="w-4 h-4" />
               <span>Nur .tra-Dateien werden unterstützt</span>
@@ -93,10 +93,10 @@ const FileDropZone = ({ onFileUpload, isLoading, gkZone }) => {
         </div>
       </div>
 
-      {!gkZone && (
+      {!coordinateSystem && (
         <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-amber-800 text-sm font-medium">
-            ⚠️ Bitte wählen Sie oben eine Gauß-Krüger-Zone aus, bevor Sie eine Datei hochladen.
+            ⚠️ Bitte wählen Sie oben ein Koordinatensystem aus, bevor Sie eine Datei hochladen.
           </p>
         </div>
       )}
