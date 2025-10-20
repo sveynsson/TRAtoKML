@@ -1,17 +1,21 @@
 import proj4 from 'proj4';
 
 // Register EPSG definitions for accurate transformations
-// DHDN (Deutsches Hauptdreiecksnetz) - Legacy GK with different datum parameters
+// Note: RD/83 and DHDN both use the same grid file (de_adv_BETA2007.tif/BETA2007.gsb)
+// They are essentially the same datum. The difference is mainly administrative.
+
+// DHDN (Deutsches Hauptdreiecksnetz) - Legacy GK zones
 proj4.defs('EPSG:31466', '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 2
 proj4.defs('EPSG:31467', '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 3
 proj4.defs('EPSG:31468', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 4
 proj4.defs('EPSG:31469', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DHDN / 3-degree Gauss-Kruger zone 5
 
-// RD/83 (Rauenberg Datum 1983) - Different towgs84 parameters than DHDN
-proj4.defs('EPSG:3398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4
-proj4.defs('EPSG:3399', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5
-proj4.defs('EPSG:5668', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4 (E-N)
-proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=612.4,77,440.2,-0.054,0.057,-2.797,2.55 +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5 (E-N)
+// RD/83 (Rauenberg Datum 1983) - Uses the same grid as DHDN (de_adv_BETA2007.tif)
+// According to official EPSG definitions, RD/83 uses the BETA2007 grid transformation
+proj4.defs('EPSG:3398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4
+proj4.defs('EPSG:3399', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5
+proj4.defs('EPSG:5668', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 4 (E-N)
+proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // RD/83 / 3-degree Gauss-Kruger zone 5 (E-N)
 
 // ETRS89 / UTM
 proj4.defs('EPSG:25833', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N
@@ -44,13 +48,14 @@ const WGS84 = 'EPSG:4326';
 
 // Coordinate system configurations with axis order handling
 const COORDINATE_CONFIG = {
-  // Legacy Gauß-Krüger zones (DHDN - Deutsches Hauptdreiecksnetz)
+  // DHDN (Deutsches Hauptdreiecksnetz) - Traditional German reference system
   'gk2': { axisOrder: 'yx', name: 'DHDN / GK Zone 2 (EPSG:31466)', epsg: 'EPSG:31466' },
   'gk3': { axisOrder: 'yx', name: 'DHDN / GK Zone 3 (EPSG:31467)', epsg: 'EPSG:31467' },
   'gk4': { axisOrder: 'yx', name: 'DHDN / GK Zone 4 (EPSG:31468)', epsg: 'EPSG:31468' },
   'gk5': { axisOrder: 'yx', name: 'DHDN / GK Zone 5 (EPSG:31469)', epsg: 'EPSG:31469' },
   
-  // RD/83 systems (Rauenberg Datum 1983)
+  // RD/83 (Rauenberg Datum 1983) - Uses same transformation as DHDN (BETA2007 grid)
+  // Note: RD/83 is administratively different but technically identical to DHDN
   'rd83_gk4': { axisOrder: 'yx', name: 'RD/83 / GK Zone 4 (EPSG:3398)', epsg: 'EPSG:3398' },
   'rd83_gk5': { axisOrder: 'yx', name: 'RD/83 / GK Zone 5 (EPSG:3399)', epsg: 'EPSG:3399' },
   'rd83_gk4_en': { axisOrder: 'xy', name: 'RD/83 / GK Zone 4 E-N (EPSG:5668)', epsg: 'EPSG:5668' },
