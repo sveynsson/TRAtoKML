@@ -161,12 +161,6 @@ const BatchConverter = ({ coordinateSystem }) => {
     setFiles(prev => prev.filter(f => f.id !== id));
   }, []);
 
-  const changeColor = useCallback((id, newColor) => {
-    setFiles(prev => prev.map(f => 
-      f.id === id ? { ...f, color: newColor } : f
-    ));
-  }, []);
-
   const handleExport = useCallback(() => {
     if (files.length === 0) {
       setError('Bitte laden Sie mindestens eine TRA-Datei hoch.');
@@ -278,37 +272,21 @@ const BatchConverter = ({ coordinateSystem }) => {
                   <div
                     className="w-6 h-6 rounded border-2 border-gray-300"
                     style={{ backgroundColor: file.color.hex }}
+                    title={`Farbe: ${file.color.hex}`}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate">{file.name}</p>
-                    <p className="text-sm text-gray-600">{file.pointCount} Punkte</p>
+                    <p className="text-sm text-gray-600">{file.pointCount} Punkte • {file.color.hex}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={file.color.name}
-                    onChange={(e) => {
-                      const newColor = COLORS.find(c => c.name === e.target.value);
-                      if (newColor) changeColor(file.id, newColor);
-                    }}
-                    className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  >
-                    {COLORS.map((color) => (
-                      <option key={color.name} value={color.name}>
-                        {color.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    onClick={() => removeFile(file.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                    title="Entfernen"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => removeFile(file.id)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                  title="Entfernen"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
