@@ -11,10 +11,11 @@ const FileDropZone = ({ onFileUpload, isLoading, coordinateSystem }) => {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
-      if (file.name.endsWith('.tra')) {
+      // Case-insensitive check for .tra extension
+      if (file.name.toLowerCase().endsWith('.tra')) {
         onFileUpload(file);
       } else {
-        alert('Bitte laden Sie eine .tra-Datei hoch.');
+        alert('Bitte laden Sie eine .tra oder .TRA Datei hoch.');
       }
     }
   }, [onFileUpload]);
@@ -54,7 +55,7 @@ const FileDropZone = ({ onFileUpload, isLoading, coordinateSystem }) => {
       >
         <input
           type="file"
-          accept=".tra"
+          accept=".tra,.TRA"
           onChange={handleFileInput}
           disabled={!coordinateSystem || isLoading}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"

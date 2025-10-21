@@ -41,7 +41,8 @@ const BatchConverter = ({ coordinateSystem }) => {
         const file = uploadedFiles[i];
         console.log('Processing file:', file.name);
         
-        if (!file.name.endsWith('.tra')) {
+        // Case-insensitive check for .tra extension
+        if (!file.name.toLowerCase().endsWith('.tra')) {
           console.log('Skipping non-.tra file:', file.name);
           continue;
         }
@@ -183,7 +184,7 @@ const BatchConverter = ({ coordinateSystem }) => {
       >
         <input
           type="file"
-          accept=".tra"
+          accept=".tra,.TRA"
           multiple
           onChange={handleFileInput}
           disabled={!coordinateSystem || isProcessing}
