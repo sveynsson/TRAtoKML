@@ -23,6 +23,9 @@ const BatchConverter = ({ coordinateSystem }) => {
   const [error, setError] = useState('');
 
   const handleFilesUpload = useCallback(async (uploadedFiles) => {
+    console.log('handleFilesUpload called with', uploadedFiles.length, 'files');
+    console.log('coordinateSystem:', coordinateSystem);
+    
     if (!coordinateSystem) {
       setError('Bitte wählen Sie zuerst ein Koordinatensystem aus.');
       return;
@@ -36,15 +39,21 @@ const BatchConverter = ({ coordinateSystem }) => {
 
       for (let i = 0; i < uploadedFiles.length; i++) {
         const file = uploadedFiles[i];
+        console.log('Processing file:', file.name);
         
         if (!file.name.endsWith('.tra')) {
+          console.log('Skipping non-.tra file:', file.name);
           continue;
         }
 
         const arrayBuffer = await file.arrayBuffer();
+        console.log('File read, size:', arrayBuffer.byteLength);
+        
         const parsedRecords = parseTRAFile(arrayBuffer);
+        console.log('Parsed records:', parsedRecords.length);
 
         if (parsedRecords.length === 0) {
+          console.log('No records found in:', file.name);
           continue;
         }
 
@@ -63,23 +72,41 @@ const BatchConverter = ({ coordinateSystem }) => {
           color: COLORS[colorIndex],
           pointCount: transformedRecords.length
         });
+        
+        console.log('Successfully processed:', file.name);
       }
 
+      console.log('Total processed files:', processedFiles.length);
       setFiles(prev => [...prev, ...processedFiles]);
-      setError('');
+      
+      if (processedFiles.length === 0) {
+        setError('Keine gültigen TRA-Dateien gefunden oder Dateien enthalten keine Daten.');
+      } else {
+        setError('');
+      }
     } catch (err) {
+      console.error('Error in handleFilesUpload:', err);
       setError(`Fehler beim Laden der Dateien: ${err.message}`);
-      console.error(err);
     } finally {
       setIsProcessing(false);
     }
   }, [coordinateSystem]);
 
   const handleFileInput = useCallback((e) => {
+    console.log('handleFileInput triggered');
+    console.log('e.target.files:', e.target.files);
+    
     const uploadedFiles = Array.from(e.target.files);
+    console.log('uploadedFiles array:', uploadedFiles);
+    
     if (uploadedFiles.length > 0) {
       handleFilesUpload(uploadedFiles);
+    } else {
+      console.log('No files selected');
     }
+    
+    // Reset input so same file can be selected again
+    e.target.value = '';
   }, [handleFilesUpload]);
 
   const handleDrop = useCallback((e) => {
