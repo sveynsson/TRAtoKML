@@ -160,6 +160,15 @@ const BatchConverter = ({ coordinateSystem }) => {
 
   return (
     <div className="space-y-4">
+      {/* Debug Info */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+        <p className="font-semibold text-yellow-900">Debug-Info:</p>
+        <p className="text-yellow-800">Koordinatensystem: {coordinateSystem || 'Nicht ausgewählt'}</p>
+        <p className="text-yellow-800">Wird verarbeitet: {isProcessing ? 'Ja' : 'Nein'}</p>
+        <p className="text-yellow-800">Geladene Dateien: {files.length}</p>
+        <p className="text-yellow-600 text-xs mt-1">Schaue in die Browser-Konsole (F12) für Details</p>
+      </div>
+
       {/* Upload Area */}
       <div
         onDrop={handleDrop}
