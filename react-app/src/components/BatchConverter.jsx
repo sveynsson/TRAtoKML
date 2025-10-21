@@ -4,18 +4,65 @@ import { parseTRAFile } from '../utils/traParser';
 import { transformCoordinates } from '../utils/coordinateTransform';
 import { exportBatchToKML } from '../utils/kmlExport';
 
-const COLORS = [
-  { name: 'Rot', hex: '#FF0000', kml: 'ff0000ff' },
-  { name: 'Grün', hex: '#00FF00', kml: 'ff00ff00' },
-  { name: 'Blau', hex: '#0000FF', kml: 'ffff0000' },
-  { name: 'Gelb', hex: '#FFFF00', kml: 'ff00ffff' },
-  { name: 'Magenta', hex: '#FF00FF', kml: 'ffff00ff' },
-  { name: 'Cyan', hex: '#00FFFF', kml: 'ffffff00' },
-  { name: 'Orange', hex: '#FF8800', kml: 'ff0088ff' },
-  { name: 'Lila', hex: '#8800FF', kml: 'ffff0088' },
-  { name: 'Pink', hex: '#FF0088', kml: 'ff8800ff' },
-  { name: 'Türkis', hex: '#00FF88', kml: 'ff88ff00' },
-];
+// Funktion zum Generieren einer zufälligen Farbe
+const generateRandomColor = () => {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return { r, g, b };
+};
+
+// Berechnet den Farbabstand zwischen zwei RGB-Farben (Euklidische Distanz)
+const colorDistance = (color1, color2) => {
+  return Math.sqrt(
+    Math.pow(color1.r - color2.r, 2) +
+    Math.pow(color1.g - color2.g, 2) +
+    Math.pow(color1.b - color2.b, 2)
+  );
+};
+
+// Generiert eine eindeutige Farbe, die sich von allen vorhandenen unterscheidet
+const generateUniqueColor = (existingColors, minDistance = 100) => {
+  let newColor;
+  let attempts = 0;
+  const maxAttempts = 100;
+
+  do {
+    newColor = generateRandomColor();
+    attempts++;
+    
+    // Nach vielen Versuchen die Mindestdistanz reduzieren
+    const currentMinDistance = attempts > 50 ? minDistance * 0.7 : minDistance;
+    
+    // Prüfe, ob die neue Farbe genug Abstand zu allen existierenden hat
+    const isTooSimilar = existingColors.some(existing => 
+      colorDistance(existing.rgb, newColor) < currentMinDistance
+    );
+    
+    if (!isTooSimilar) {
+      break;
+    }
+  } while (attempts < maxAttempts);
+
+  return newColor;
+};
+
+// Konvertiert RGB zu Hex
+const rgbToHex = (r, g, b) => {
+  return '#' + [r, g, b].map(x => {
+    const hex = x.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  }).join('').toUpperCase();
+};
+
+// Konvertiert RGB zu KML-Format (AABBGGRR)
+const rgbToKml = (r, g, b) => {
+  const hex = [b, g, r].map(x => {
+    const h = x.toString(16);
+    return h.length === 1 ? '0' + h : h;
+  }).join('');
+  return 'ff' + hex;
+};
 
 const BatchConverter = ({ coordinateSystem }) => {
   const [files, setFiles] = useState([]);
@@ -23,9 +70,6 @@ const BatchConverter = ({ coordinateSystem }) => {
   const [error, setError] = useState('');
 
   const handleFilesUpload = useCallback(async (uploadedFiles) => {
-    console.log('handleFilesUpload called with', uploadedFiles.length, 'files');
-    console.log('coordinateSystem:', coordinateSystem);
-    
     if (!coordinateSystem) {
       setError('Bitte wählen Sie zuerst ein Koordinatensystem aus.');
       return;
@@ -39,22 +83,16 @@ const BatchConverter = ({ coordinateSystem }) => {
 
       for (let i = 0; i < uploadedFiles.length; i++) {
         const file = uploadedFiles[i];
-        console.log('Processing file:', file.name);
         
         // Case-insensitive check for .tra extension
         if (!file.name.toLowerCase().endsWith('.tra')) {
-          console.log('Skipping non-.tra file:', file.name);
           continue;
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        console.log('File read, size:', arrayBuffer.byteLength);
-        
         const parsedRecords = parseTRAFile(arrayBuffer);
-        console.log('Parsed records:', parsedRecords.length);
 
         if (parsedRecords.length === 0) {
-          console.log('No records found in:', file.name);
           continue;
         }
 
@@ -64,20 +102,21 @@ const BatchConverter = ({ coordinateSystem }) => {
           ...transformCoordinates(record.rY, record.rX, coordinateSystem)
         }));
 
-        const colorIndex = processedFiles.length % COLORS.length;
+        // Generiere eine eindeutige Farbe für diese Datei
+        const existingColors = processedFiles.map(f => f.color);
+        const rgb = generateUniqueColor(existingColors);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+        const kml = rgbToKml(rgb.r, rgb.g, rgb.b);
         
         processedFiles.push({
           id: Date.now() + i,
           name: file.name,
           records: transformedRecords,
-          color: COLORS[colorIndex],
+          color: { name: hex, hex, kml, rgb },
           pointCount: transformedRecords.length
         });
-        
-        console.log('Successfully processed:', file.name);
       }
 
-      console.log('Total processed files:', processedFiles.length);
       setFiles(prev => [...prev, ...processedFiles]);
       
       if (processedFiles.length === 0) {
@@ -161,15 +200,6 @@ const BatchConverter = ({ coordinateSystem }) => {
 
   return (
     <div className="space-y-4">
-      {/* Debug Info */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
-        <p className="font-semibold text-yellow-900">Debug-Info:</p>
-        <p className="text-yellow-800">Koordinatensystem: {coordinateSystem || 'Nicht ausgewählt'}</p>
-        <p className="text-yellow-800">Wird verarbeitet: {isProcessing ? 'Ja' : 'Nein'}</p>
-        <p className="text-yellow-800">Geladene Dateien: {files.length}</p>
-        <p className="text-yellow-600 text-xs mt-1">Schaue in die Browser-Konsole (F12) für Details</p>
-      </div>
-
       {/* Upload Area */}
       <div
         onDrop={handleDrop}
