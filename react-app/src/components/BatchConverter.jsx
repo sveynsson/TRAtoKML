@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, Download, Trash2, FileText, Layers } from 'lucide-react';
+import { Upload, Download, Trash2, FileText, Layers, Map, MapOff } from 'lucide-react';
 import { parseTRAFile } from '../utils/traParser';
 import { transformCoordinates } from '../utils/coordinateTransform';
 import { exportBatchToKML } from '../utils/kmlExport';
+import BatchMapViewer from './BatchMapViewer';
 
 // Funktion zum Generieren einer zufälligen Farbe
 const generateRandomColor = () => {
@@ -68,6 +69,7 @@ const BatchConverter = ({ coordinateSystem }) => {
   const [files, setFiles] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [showMap, setShowMap] = useState(false);
 
   const handleFilesUpload = useCallback(async (uploadedFiles) => {
     if (!coordinateSystem) {
@@ -253,14 +255,35 @@ const BatchConverter = ({ coordinateSystem }) => {
                 Geladene Trassen ({files.length})
               </h3>
             </div>
-            <button
-              onClick={clearAll}
-              className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center space-x-1"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Alle löschen</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className={`px-3 py-1 text-sm rounded transition-colors flex items-center space-x-1 ${
+                  showMap 
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                title={showMap ? 'Karte ausblenden' : 'Karte anzeigen'}
+              >
+                {showMap ? <MapOff className="w-4 h-4" /> : <Map className="w-4 h-4" />}
+                <span>{showMap ? 'Karte ausblenden' : 'Karte anzeigen'}</span>
+              </button>
+              <button
+                onClick={clearAll}
+                className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition-colors flex items-center space-x-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Alle löschen</span>
+              </button>
+            </div>
           </div>
+
+          {/* Map Viewer */}
+          {showMap && (
+            <div className="p-4 border-b border-gray-200">
+              <BatchMapViewer files={files} />
+            </div>
+          )}
 
           <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
             {files.map((file) => (
