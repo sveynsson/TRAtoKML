@@ -21,6 +21,13 @@ proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0
 // Uses Krassowsky 1940 ellipsoid with specific towgs84 transformation parameters
 proj4.defs('EPSG:2398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=krass +towgs84=24,-123,-94,-0.02,0.25,0.13,1.1 +units=m +no_defs'); // Pulkovo 1942(83) / 3-degree Gauss-Kruger zone 4
 
+// DB_REF (Datenbankreferenzsystem der Deutschen Bahn)
+// Uses Bessel ellipsoid with EPSG:5826 transformation (DBREF to ETRS89)
+proj4.defs('EPSG:5682', '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 2 (E-N)
+proj4.defs('EPSG:5683', '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 3 (E-N)
+proj4.defs('EPSG:5684', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 4 (E-N)
+proj4.defs('EPSG:5685', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 5 (E-N)
+
 // ETRS89 / UTM
 proj4.defs('EPSG:25833', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N
 proj4.defs('EPSG:3045', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N (N-E)
@@ -43,6 +50,12 @@ const COORDINATE_SYSTEMS = {
   
   // Pulkovo 1942(83) - Soviet/Russian system
   'pulkovo_gk4': 'EPSG:2398',
+  
+  // DB_REF (Deutsche Bahn Reference System)
+  'dbref_gk2': 'EPSG:5682',
+  'dbref_gk3': 'EPSG:5683',
+  'dbref_gk4': 'EPSG:5684',
+  'dbref_gk5': 'EPSG:5685',
   
   // ETRS89 / UTM zones
   'etrs89_utm33n': 'EPSG:25833',
@@ -70,6 +83,12 @@ const COORDINATE_CONFIG = {
   
   // Pulkovo 1942(83) - Soviet/Russian system (used in former GDR)
   'pulkovo_gk4': { axisOrder: 'yx', name: 'Pulkovo 1942(83) / GK Zone 4 (EPSG:2398)', epsg: 'EPSG:2398' },
+  
+  // DB_REF (Datenbankreferenzsystem der Deutschen Bahn) - uses EPSG:5826 transformation
+  'dbref_gk2': { axisOrder: 'xy', name: 'DB_REF / GK Zone 2 E-N (EPSG:5682)', epsg: 'EPSG:5682' },
+  'dbref_gk3': { axisOrder: 'xy', name: 'DB_REF / GK Zone 3 E-N (EPSG:5683)', epsg: 'EPSG:5683' },
+  'dbref_gk4': { axisOrder: 'xy', name: 'DB_REF / GK Zone 4 E-N (EPSG:5684)', epsg: 'EPSG:5684' },
+  'dbref_gk5': { axisOrder: 'xy', name: 'DB_REF / GK Zone 5 E-N (EPSG:5685)', epsg: 'EPSG:5685' },
   
   // ETRS89 / UTM systems  
   'etrs89_utm33n': { axisOrder: 'xy', name: 'ETRS89 / UTM 33N (EPSG:25833)', epsg: 'EPSG:25833' },
@@ -141,6 +160,7 @@ function getCategoryForSystem(system) {
   if (system.startsWith('gk')) return 'DHDN (Deutsches Hauptdreiecksnetz)';
   if (system.startsWith('rd83')) return 'RD/83 (Rauenberg Datum 1983)';
   if (system.startsWith('pulkovo')) return 'Pulkovo 1942(83) (Soviet/DDR)';
+  if (system.startsWith('dbref')) return 'DB_REF (Deutsche Bahn Referenzsystem)';
   if (system.startsWith('etrs89')) return 'ETRS89/UTM';
   return 'Andere';
 }
