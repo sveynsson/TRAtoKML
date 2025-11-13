@@ -21,12 +21,16 @@ proj4.defs('EPSG:5669', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0
 // Uses Krassowsky 1940 ellipsoid with specific towgs84 transformation parameters
 proj4.defs('EPSG:2398', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=krass +towgs84=24,-123,-94,-0.02,0.25,0.13,1.1 +units=m +no_defs'); // Pulkovo 1942(83) / 3-degree Gauss-Kruger zone 4
 
-// DB_REF (Datenbankreferenzsystem der Deutschen Bahn)
-// Uses Bessel ellipsoid with EPSG:5826 transformation (DBREF to ETRS89)
-proj4.defs('EPSG:5682', '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 2 (E-N)
-proj4.defs('EPSG:5683', '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 3 (E-N)
-proj4.defs('EPSG:5684', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 4 (E-N)
-proj4.defs('EPSG:5685', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +nadgrids=@BETA2007.gsb +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 5 (E-N)
+// DB_REF (Datenbankreferenzsystem der Deutschen Bahn) - EPSG:5681 datum
+// Uses Bessel 1841 ellipsoid with EPSG:5826 transformation (DB_REF to ETRS89)
+// 7-parameter Helmert transformation (Coordinate Frame rotation):
+// Translation: dX=584.9636m, dY=107.7175m, dZ=413.8067m
+// Rotation: rX=-1.1155", rY=-0.2824", rZ=3.1384" (arc-seconds)
+// Scale: s=7.9922 ppm
+proj4.defs('EPSG:5682', '+proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,-1.1155,-0.2824,3.1384,7.9922 +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 2 (E-N)
+proj4.defs('EPSG:5683', '+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,-1.1155,-0.2824,3.1384,7.9922 +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 3 (E-N)
+proj4.defs('EPSG:5684', '+proj=tmerc +lat_0=0 +lon_0=12 +k=1 +x_0=4500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,-1.1155,-0.2824,3.1384,7.9922 +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 4 (E-N)
+proj4.defs('EPSG:5685', '+proj=tmerc +lat_0=0 +lon_0=15 +k=1 +x_0=5500000 +y_0=0 +ellps=bessel +towgs84=584.9636,107.7175,413.8067,-1.1155,-0.2824,3.1384,7.9922 +units=m +no_defs'); // DB_REF / 3-degree Gauss-Kruger zone 5 (E-N)
 
 // ETRS89 / UTM
 proj4.defs('EPSG:25833', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'); // ETRS89 / UTM zone 33N
